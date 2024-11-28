@@ -1,38 +1,46 @@
 trigger:
-  - main
+- master
 
 pool:
   name: 'Default'
 
+variables:
+  buildConfiguration: 'Release'
+
 steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '8.x'
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+- task: Checkout@1
+  displayName: 'Checkout code from repository'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore NuGet packages'
-    inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
+- task: UseDotNet@2
+  displayName: 'Install .NET SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Build project'
-    inputs:
-      command: 'build'
-      projects: '**/*.csproj'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Pack project'
-    inputs:
-      command: 'pack'
-      packagesToPack: '**/*.csproj'
-      configuration: 'Release'
+- task: DotNetCoreCLI@2
+  displayName: 'Build the project'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
 
-  - task: NuGetCommand@2
-    displayName: 'Publish package to Azure Artifacts'
-    inputs:
-      command: 'push'
-      publishVstsFeed: 'nle39'
-      allowPackageConflicts: true
+- task: DotNetCoreCLI@2
+  displayName: 'Pack NuGet package'
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: NuGetCommand@2
+  displayName: 'Publish NuGet package to Azure Artifacts'
+  inputs:
+    command: 'push'
+    publishVstsFeed: 'nle39' 
+    searchPatternPush: '**/*.nupkg'
+    allowPackageConflicts: true
