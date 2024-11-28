@@ -29,13 +29,13 @@ steps:
     command: 'build'
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
-
 - task: DotNetCoreCLI@2
   displayName: 'Pack NuGet package'
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
 
 - task: NuGetCommand@2
   displayName: 'Publish NuGet package to Azure Artifacts'
