@@ -8,9 +8,6 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: Checkout@1
-  displayName: 'Checkout code from repository'
-
 - task: UseDotNet@2
   displayName: 'Install .NET SDK'
   inputs:
@@ -21,26 +18,26 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     command: 'restore'
-    projects: '**/*.csproj'
+    projects: '**/StringExtensions_Tester.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'Build the project'
   inputs:
     command: 'build'
-    projects: '**/*.csproj'
+    projects: '**/StringExtensions_Tester.csproj'
     arguments: '--configuration $(buildConfiguration)'
+
 - task: DotNetCoreCLI@2
   displayName: 'Pack NuGet package'
   inputs:
     command: 'pack'
-    packagesToPack: '**/*.csproj'
+    projects: '**/StringExtensions_Tester.csproj'
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-
 
 - task: NuGetCommand@2
   displayName: 'Publish NuGet package to Azure Artifacts'
   inputs:
     command: 'push'
-    publishVstsFeed: 'nle39' 
-    searchPatternPush: '**/*.nupkg'
+    publishVstsFeed: 'nle39'  
+    searchPatternPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     allowPackageConflicts: true
